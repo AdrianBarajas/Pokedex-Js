@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex</title>
+  <link rel="preoload" href="styles.css" as="style">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cause:wght@100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <header>
+    <h1>Pokedex</h1>
+
+  </header>
+
+  <div class="nav-bg container">
+    <nav class="nav-main">
+      <a href="#">Home</a>
+      <a href="#">Pokedex</a>
+      <a href="#">Videogames</a>
+      <a href="#">TCG Pokemon</a>
+      <a href="#">TV Pokemon</a>
+      <a href="#">Play! Pokemon</a>
+      <a href="#">News</a>
+    </nav>
+  </div>
+
+  <div class="container">
+
+    <form action="/search" method="get" class="search-form">
+
+      <div class="search-bar">
+        <input type="search" id="search-input" name="q" placeholder="Search Your Pokemon!">
+        <div class="shadow">
+
+          <button class="button" type="submit" aria-label="Send">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-pokeball">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+            <path d="M3 12h6" />
+            <path d="M15 12h6" />
+          </svg>
+        </button>
+      </div>
+      </div>
+
+      <div>
+        <label for="type-select" class="type-filter">Types</label>
+        <select name="type" id="type-select">
+          <option value="">All types</option>
+          <option value="fire">Fire</option>
+          <option value="water">Water</option>
+          <option value="grass">Grass</option>
+        </select>
+
+        <label for="weakness-select" class="weakness-filter">Weaknesses</label>
+        <select name="weakness" id="weakness-select">
+          <option value="" disabled>Weaknesses</option>
+          <option value="fire">Fire</option>
+          <option value="water">Water</option>
+          <option value="grass">Grass</option>
+        </select>
+
+        <label for="ability-select" class="ability-filter">Ability</label>
+        <select name="ability" id="ability-select">
+          <option value="" disabled>Ability</option>
+          <option value="intimidate">intimidate</option>
+          <option value="absorb-water">Absorb Water</option>
+          <option value="absorb-fire">Absorb Fire</option>
+        </select>
+
+        <button type="reset" aria-label="reset">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-rotate">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5" />
+          </svg>
+        </button>
+      </div>
+
+      <section class="pokedex-results">
+        <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+
+        <div>
+          <a href="load-more">Load more Pokemon</a>
+        </div>
+      </section>
+
+    </form>
+  </div>
+
+  <script src="app.js" type="module"></script>
+</body>
+
+</html>

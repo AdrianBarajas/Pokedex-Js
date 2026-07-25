@@ -1,0 +1,95 @@
+$kind: http-request
+name: getPokemon
+description: ""
+url: https://pokeapi.co/api/v2/pokemon/{{id}}
+method: GET
+order: 1784158804456
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const template = `
+      <style>
+        body { font-family: sans-serif; padding: 12px; }
+        h2 { margin: 0 0 4px; text-transform: capitalize; font-size: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .card { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; }
+        .card .v { font-size: 18px; font-weight: 700; }
+        .card .l { font-size: 11px; color: #888; text-transform: uppercase; }
+        .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 5px 8px; background: #f5f5f5; font-size: 12px; text-transform: uppercase; color: #555; }
+        td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #e0f2e9; color: #1a7a3c; margin-right: 4px; text-transform: capitalize; }
+        .bar-wrap { background: #eee; border-radius: 4px; height: 8px; width: 100%; }
+        .bar { height: 8px; border-radius: 4px; background: #4caf50; }
+        h3 { font-size: 14px; margin: 0 0 8px; color: #333; }
+        .sprite { display: block; margin: 0 auto 8px; image-rendering: pixelated; }
+      </style>
+      
+      <img class="sprite" src="{{spriteUrl}}" width="96" height="96" />
+      <h2>#{{id}} {{name}}</h2>
+      <div class="grid">
+        {{#each cards}}
+          <div class="card"><div class="l">{{label}}</div><div class="v">{{value}}</div></div>
+        {{/each}}
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <h3>Types</h3>
+        {{#each types}}<span class="badge">{{name}}</span>{{/each}}
+      </div>
+      
+      <div class="sections">
+        <div>
+          <h3>Base Stats</h3>
+          <table>
+            <tr><th>Stat</th><th>Value</th><th>Bar</th></tr>
+            {{#each stats}}
+              <tr>
+                <td>{{name}}</td>
+                <td>{{value}}</td>
+                <td><div class="bar-wrap"><div class="bar" style="width:{{pct}}%"></div></div></td>
+              </tr>
+            {{/each}}
+          </table>
+        </div>
+        <div>
+          <h3>Abilities</h3>
+          <table>
+            <tr><th>Ability</th><th>Hidden</th></tr>
+            {{#each abilities}}
+              <tr><td>{{name}}</td><td>{{hidden}}</td></tr>
+            {{/each}}
+          </table>
+        </div>
+      </div>
+      `;
+      
+      function createPayload() {
+        var body = pm.response.json();
+        var statMax = 255;
+        return {
+          id: body.id,
+          name: body.name,
+          spriteUrl: body.sprites && body.sprites.front_default ? body.sprites.front_default : '',
+          cards: [
+            { label: 'Height', value: (body.height / 10) + ' m' },
+            { label: 'Weight', value: (body.weight / 10) + ' kg' },
+            { label: 'Base XP', value: body.base_experience }
+          ],
+          types: (body.types || []).map(function(t) { return { name: t.type.name }; }),
+          stats: (body.stats || []).map(function(s) {
+            return {
+              name: s.stat.name,
+              value: s.base_stat,
+              pct: Math.round((s.base_stat / statMax) * 100)
+            };
+          }),
+          abilities: (body.abilities || []).map(function(a) {
+            return { name: a.ability.name, hidden: a.is_hidden ? 'Yes' : 'No' };
+          })
+        };
+      }
+      
+      pm.visualizer.set(template, createPayload());
