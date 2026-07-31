@@ -1,9 +1,20 @@
 const results = document.querySelector('#pokedex-results');
 const form = document.querySelector('#form');
+const initSearch = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', validForm);
+
+    loadPreviewPokemon();
 });
+
+function loadPreviewPokemon(){
+    let pokemonNumbers = [];
+    for(let i = 1; i <= initSearch; i++){
+        pokemonNumbers.push(i);
+    }
+    searchPokemon(pokemonNumbers);
+}
 
 function validForm(e) {
     e.preventDefault();
@@ -15,7 +26,7 @@ function validForm(e) {
         return;
     }
 
-    searchPokemon(searchValue);
+    searchPokemon([searchValue]);
 }
 
 function showAlert(msj) {
@@ -38,37 +49,53 @@ function showAlert(msj) {
     }
 }
 
-async function searchPokemon(searchValue) {
+async function searchPokemon(searchValues) {
 
-    const url = `https://pokeapi.co/api/v2/pokemon/${searchValue}`;
+    let baseUrl = 'https://pokeapi.co/api/v2/pokemon/';
 
     try {
-        const response = await fetch(url);
-        const result = await response.json();
-        showResult(result)
+
+        const promises = searchValues.map(async (searchValue) => {
+            const response = await fetch(`${baseUrl}${searchValue}`);
+
+            if(!response.ok){
+                console.log('Pokemon no encontrado');
+            }
+
+            return await response.json();
+        })
+        
+        const resultsData = await Promise.all(promises);
+        showResult(resultsData);
+
     } catch (error) {
-        console.log(error);
+
     }
 }
 
-function showResult(result) {
+function showResult(resultsData) {
 
-    const { id, name, sprites, stats } = result;
+    
     // console.log(id);
     // console.log(name);
     // console.log(sprites);
     // console.log(stats);
+    results.innerHTML = '';
 
-    results.innerHTML = `
-    <div class="pokemon-card">
-        <img src="${sprites['front_default']}" alt="img-${name}">
+    resultsData.forEach(pokemon => {
+        const { id, name, sprites, stats } = pokemon;
 
-        <div class="pokemon-data">
-            <p>${name}</p>
-            <p></p>
+        results.innerHTML += `
+            <div class="pokemon-card">
+                <img src="${sprites['front_default']}" alt="img-${name}">
 
-            <a href=""></a>
-        </div>
-    </div>
-    `;
+                <div class="pokemon-data">
+                    <p>${name}</p>
+                    <p></p>
+
+                    <a href=""></a>
+                </div>
+            </div>
+        `;
+    });
 }

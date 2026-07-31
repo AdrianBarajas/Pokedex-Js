@@ -149,9 +149,8 @@ header {
 }
 
 .pokemon-results{
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+  display: inline-block;
+  width: 80%;;
 }
 
 .pokemon-card{
