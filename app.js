@@ -1,12 +1,23 @@
 const results = document.querySelector('#pokedex-results');
 const form = document.querySelector('#form');
-const initSearch = 30;
+const loadMoreBtn = document.querySelector('#morePokemonBtn');
+let initSearch = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', validForm);
-
+    loadMoreBtn.addEventListener('click', loadMorePokemons);
     loadPreviewPokemon();
 });
+
+function loadMorePokemons(e){
+
+    initSearch += 30;
+    loadPreviewPokemon();
+    loadMoreBtn.disabled = true;
+    setTimeout(() => {
+        loadMoreBtn.disabled = false;
+    }, 3000);
+}
 
 function loadPreviewPokemon(){
     let pokemonNumbers = [];
@@ -83,19 +94,30 @@ function showResult(resultsData) {
     results.innerHTML = '';
 
     resultsData.forEach(pokemon => {
-        const { id, name, sprites, stats } = pokemon;
+        const { id, name, sprites, types, stats } = pokemon;
+        const typesArr = getTypes(types);
 
         results.innerHTML += `
             <div class="pokemon-card">
-                <img src="${sprites['front_default']}" alt="img-${name}">
+                <img class="pokemon-img" src="${sprites["other"]["showdown"]["front_default"]}" alt="img-${name}">
 
                 <div class="pokemon-data">
-                    <p>${name}</p>
-                    <p></p>
+                    <p class="pokemon-id">N◦${id}</p>
+                    <p class="pokemon-name">${name}</p>
+                    <p class="pokemon-types">${typesArr[0]}</p>
 
-                    <a href=""></a>
                 </div>
             </div>
         `;
     });
+}
+
+function getTypes(types){
+    const results = [];
+
+    types.forEach(element => {
+       results.push(element['type']['name']);
+    });
+
+    return results;
 }
