@@ -2,6 +2,11 @@ const results = document.querySelector('#pokedex-results');
 const form = document.querySelector('#form');
 const loadMoreBtn = document.querySelector('#morePokemonBtn');
 const sidebar = document.querySelector('#pokemon-sidebar');
+const searchInput = document.querySelector('#search-input');
+const typeSelect = document.querySelector('#type-select');
+const weaknessSelect = document.querySelector('#weakness-select');
+const abilitySelect = document.querySelector('#ability-select');
+const resetButton = document.querySelector('button[type="reset"]');
 let initSearch = 30;
 
 const typeColors = {
@@ -29,38 +34,63 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', validForm);
     loadMoreBtn.addEventListener('click', loadMorePokemons);
     results.addEventListener('click', handlePokemonCardClick);
+    resetButton.addEventListener('click', () => {
+        initSearch = 30;
+        setTimeout(() => loadPreviewPokemon(), 0);
+    });
     loadPreviewPokemon();
 });
 
-function loadMorePokemons(e){
-
+function loadMorePokemons(e) {
     initSearch += 30;
     loadPreviewPokemon();
     loadMoreBtn.disabled = true;
+
     setTimeout(() => {
         loadMoreBtn.disabled = false;
     }, 3000);
 }
 
-function loadPreviewPokemon(){
-    let pokemonNumbers = [];
-    for(let i = 1; i <= initSearch; i++){
+function loadPreviewPokemon() {
+    const pokemonNumbers = [];
+
+    for (let i = 1; i <= initSearch; i++) {
         pokemonNumbers.push(i);
     }
+
     searchPokemon(pokemonNumbers);
 }
 
-function validForm(e) {
+function getSelectedFilters() {
+    return {
+        type: typeSelect.value,
+        weakness: weaknessSelect.value,
+        ability: abilitySelect.value
+    };
+}
+
+async function validForm(e) {
     e.preventDefault();
 
-    const searchValue = document.querySelector('#search-input').value.trim();
+    const searchValue = searchInput.value.trim().toLowerCase();
+    const selectedFilters = getSelectedFilters();
 
-    if (searchValue == '') {
-        showAlert('Search field must not be empty');
+    if (!searchValue && !selectedFilters.type && !selectedFilters.weakness && !selectedFilters.ability) {
+        initSearch = 30;
+        loadPreviewPokemon();
         return;
     }
 
-    searchPokemon([searchValue]);
+    if (searchValue) {
+        const resultsData = await fetchPokemonData([searchValue]);
+        const filteredData = filterPokemonData(resultsData, selectedFilters);
+        showResult(filteredData);
+        return;
+    }
+
+    const filteredPokemonIds = await getPokemonIdsByFilters(selectedFilters);
+    const resultsData = await fetchPokemonData(filteredPokemonIds);
+    showResult(resultsData);
 }
 
 function showAlert(msj) {
@@ -68,8 +98,6 @@ function showAlert(msj) {
 
     if (!thereIsAnAlert) {
         const alert = document.createElement('P');
-        //alert.classList.add('');
-
         alert.innerHTML = `
             <strong style="font-weight: bold">Error</strong>
             <span>${msj}</span>
@@ -83,33 +111,133 @@ function showAlert(msj) {
     }
 }
 
-async function searchPokemon(searchValues) {
-
-    let baseUrl = 'https://pokeapi.co/api/v2/pokemon/';
+async function fetchPokemonData(searchValues) {
+    const baseUrl = 'https://pokeapi.co/api/v2/pokemon/';
 
     try {
-
         const promises = searchValues.map(async (searchValue) => {
             const response = await fetch(`${baseUrl}${searchValue}`);
 
-            if(!response.ok){
-                console.log('Pokemon no encontrado');
+            if (!response.ok) {
                 return null;
             }
 
             return await response.json();
         });
-        
-        const resultsData = (await Promise.all(promises)).filter(Boolean);
-        showResult(resultsData);
 
+        return (await Promise.all(promises)).filter(Boolean);
     } catch (error) {
         console.error(error);
+        return [];
     }
+}
+
+async function searchPokemon(searchValues) {
+    const resultsData = await fetchPokemonData(searchValues);
+    showResult(resultsData);
+}
+
+function filterPokemonData(resultsData, filters) {
+    return resultsData.filter((pokemon) => {
+        const types = getTypes(pokemon.types);
+        const abilities = getAbilities(pokemon.abilities);
+
+        const matchesType = filters.type ? types.includes(filters.type) : true;
+        const matchesWeakness = filters.weakness ? matchesSelectedWeakness(types, filters.weakness) : true;
+        const matchesAbility = filters.ability ? abilities.includes(filters.ability) : true;
+
+        return matchesType && matchesWeakness && matchesAbility;
+    });
+}
+
+function matchesSelectedWeakness(types, weakness) {
+    const weaknessMap = {
+        fire: ['grass', 'ice', 'bug', 'steel'],
+        water: ['fire', 'ground', 'rock'],
+        grass: ['water', 'ground', 'rock'],
+        electric: ['water', 'flying'],
+        normal: [],
+        poison: ['grass', 'fairy'],
+        fighting: ['normal', 'ice', 'rock', 'dark', 'steel'],
+        flying: ['grass', 'fighting', 'bug'],
+        psychic: ['fighting', 'poison'],
+        bug: ['grass', 'psychic', 'dark'],
+        rock: ['fire', 'ice', 'flying', 'bug'],
+        ghost: ['psychic', 'ghost'],
+        dragon: ['dragon', 'ice', 'fairy'],
+        dark: ['fighting', 'bug', 'fairy'],
+        steel: ['fire', 'water', 'electric', 'steel'],
+        fairy: ['fighting', 'dragon', 'dark']
+    };
+
+    const weaknessTypes = weaknessMap[weakness] || [];
+    return types.some((type) => weaknessTypes.includes(type));
+}
+
+async function getPokemonIdsByFilters(filters) {
+    const typeIds = filters.type ? await getFilterPokemonIds('type', filters.type) : [];
+    const weaknessIds = filters.weakness ? await getFilterPokemonIds('weakness', filters.weakness) : [];
+    const abilityIds = filters.ability ? await getFilterPokemonIds('ability', filters.ability) : [];
+
+    if (typeIds.length === 0 && weaknessIds.length === 0 && abilityIds.length === 0) {
+        return [];
+    }
+
+    const activeFilters = [
+        { ids: typeIds, enabled: Boolean(filters.type) },
+        { ids: weaknessIds, enabled: Boolean(filters.weakness) },
+        { ids: abilityIds, enabled: Boolean(filters.ability) }
+    ].filter((filter) => filter.enabled);
+
+    const resultIds = activeFilters.length > 0 ? new Set(activeFilters[0].ids) : new Set();
+
+    activeFilters.slice(1).forEach((filter) => {
+        const nextSet = new Set(filter.ids);
+        for (const id of resultIds) {
+            if (!nextSet.has(id)) {
+                resultIds.delete(id);
+            }
+        }
+    });
+
+    return [...resultIds];
+}
+
+async function getFilterPokemonIds(filterType, filterValue) {
+    const baseUrl = 'https://pokeapi.co/api/v2';
+
+    if (filterType === 'ability') {
+        const response = await fetch(`${baseUrl}/ability/${filterValue}`);
+        const data = await response.json();
+        return data.pokemon.map(({ pokemon }) => pokemon.name);
+    }
+
+    if (filterType === 'weakness') {
+        const typeResponse = await fetch(`${baseUrl}/type/${filterValue}`);
+        const typeData = await typeResponse.json();
+        const weaknessTypes = typeData.damage_relations?.double_damage_from || [];
+        const weaknessPromises = weaknessTypes.map(async (item) => {
+            const response = await fetch(`${baseUrl}/type/${item.name}`);
+            const data = await response.json();
+            return data.pokemon.map(({ pokemon }) => pokemon.name);
+        });
+
+        const weaknessesByType = await Promise.all(weaknessPromises);
+        return [...new Set(weaknessesByType.flat())];
+    }
+
+    const response = await fetch(`${baseUrl}/type/${filterValue}`);
+    const data = await response.json();
+    return data.pokemon.map(({ pokemon }) => pokemon.name);
 }
 
 function showResult(resultsData) {
     results.innerHTML = '';
+
+    if (resultsData.length === 0) {
+        results.innerHTML = '<p>No Pokémon were found with the selected filters.</p>';
+        return;
+    }
 
     resultsData.forEach(pokemon => {
         const { id, name, sprites, types } = pokemon;
