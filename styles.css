@@ -87,6 +87,17 @@ header {
   margin: 3rem auto;
 }
 
+.pokedex-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32rem;
+  gap: 2rem;
+  align-items: start;
+}
+
+.results-panel {
+  min-width: 0;
+}
+
 .search-form{
   display: flex;
   flex-direction: column;
@@ -171,6 +182,13 @@ header {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 1rem 2rem rgba(33, 33, 33, 0.15);
 }
 
 .pokemon-img{
@@ -190,9 +208,95 @@ header {
 }
 
 .pokemon-types{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.pokemon-type {
   text-transform: uppercase;
-  background-color: #757575;
   color: var(--white);
   border-radius: 3rem;
   text-align: center;
+  padding: 0.4rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
+}
+
+.pokemon-sidebar {
+  background-color: var(--white);
+  border-radius: 2rem;
+  padding: 2rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.sidebar-placeholder {
+  color: var(--gray);
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.pokemon-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pokemon-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pokemon-detail-img {
+  width: 12rem;
+}
+
+.pokemon-detail-id {
+  font-size: 1.4rem;
+  color: var(--gray);
+  margin: 0;
+}
+
+.pokemon-detail-header h2 {
+  margin: 0.4rem 0 0;
+  text-transform: capitalize;
+}
+
+.pokemon-detail-section h3 {
+  margin: 0 0 0.8rem;
+  text-align: left;
+}
+
+.pokemon-detail-section p,
+.pokemon-detail-section li {
+  font-size: 1.4rem;
+}
+
+.pokemon-stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pokemon-stats-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+@media (max-width: 1024px) {
+  .pokedex-layout {
+     grid-template-columns: 1fr;
+  }
+
+  .pokemon-sidebar {
+     position: static;
+  }
 }
