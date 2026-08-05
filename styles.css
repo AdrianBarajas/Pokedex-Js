@@ -181,6 +181,7 @@ header {
 .pokemon-name{
   font-size: 2rem;
   font-weight: bold;
+  text-transform: capitalize;
 }
 
 .pokemon-id{
