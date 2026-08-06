@@ -92,6 +92,7 @@ header {
   grid-template-columns: minmax(0, 1fr) 32rem;
   gap: 2rem;
   align-items: start;
+  margin-bottom: 3rem;
 }
 
 .results-panel {
@@ -277,6 +278,7 @@ header {
 .pokemon-detail-section p,
 .pokemon-detail-section li {
   font-size: 1.4rem;
+  text-transform: capitalize;
 }
 
 .pokemon-stats-list {
@@ -290,6 +292,7 @@ header {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.6rem;
+  text-transform: capitalize;
 }
 
 @media (max-width: 1024px) {

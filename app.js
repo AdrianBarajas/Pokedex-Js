@@ -295,7 +295,7 @@ async function showPokemonSidebar(pokemonId) {
         sidebar.innerHTML = `
             <div class="pokemon-detail-card">
                 <div class="pokemon-detail-header">
-                    <img class="pokemon-detail-img" src="${pokemonData.sprites.other.showdown.front_default}" alt="img-${pokemonData.name}">
+                    <img class="pokemon-detail-img" src="${pokemonData["sprites"]["other"]["official-artwork"]["front_default"]}" alt="img-${pokemonData.name}">
                     <div>
                         <p class="pokemon-detail-id">N◦${pokemonData.id}</p>
                         <h2>${pokemonData.name}</h2>
